@@ -1,0 +1,24 @@
+from os.path import join
+import glob
+
+configfile: "./config.yaml"
+
+# globals
+DIRS = ['TMP/', 'logs']
+
+# key step to get sample names from R1 read
+SAMPLES, = glob_wildcards(join('raw_reads',
+    '{samples,2535[^/]+}_R1_001.fastq.gz'))
+
+PATTERN_R1 = config['pat_r1']
+PATTERN_R2 = config['pat_r2']
+
+rule all:
+    input:
+        expand('clean_reads/{sample}_R1_001.cln.fastq.gz', sample=SAMPLES),
+        DIRS, #expand('counts/{sample}.sbn.counts', sample=SAMPLES)
+
+rule project_setup:
+    output: DIRS
+    shell:
+        "mkdir -p "+' '.join(DIRS)
