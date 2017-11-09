@@ -21,13 +21,10 @@ REF_DB = config['REF_DB']
 TAX_REF = config['TAX_REF']
 
 rule all:
-    input: "sample.otu_table.txt", "tax_summary_proportion/"
-
-
-#rule project_setup:
-#    output: DIRS
-#    shell:
-#        "mkdir -p "+' '.join(DIRS)
+    input:
+        "sample.otu_table.txt",
+        "tax_summary_proportion/",
+        "sample.otu_table_summary.txt"
 
 rule cluster_otus:
     input:
@@ -95,6 +92,21 @@ rule summarize_taxa:
         """
         summarize_taxa.py -i {input} -o {output.prop} --suppress_biom_table_output
         summarize_taxa.py -a -i {input} -o {output.count} --suppress_biom_table_output
+        """
+
+rule summarize_table:
+    input:
+        "sample.otu_table_wTax.biom"
+    output:
+        "sample.otu_table_summary.txt"
+    shell:
+        """
+        biom summarize-table -i {input} -o {output}
+        cat {output}
+        echo
+        echo ' ~~~~~~ Caution! ~~~~~~ '
+        echo 'you need the above data to set the SAM_DEPTH (--sampling_depth)'
+        echo 'param in config for the core_diversity_analysis rule'
         """
 
 onerror:
