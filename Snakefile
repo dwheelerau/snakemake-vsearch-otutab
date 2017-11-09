@@ -21,7 +21,7 @@ REF_DB = config['REF_DB']
 TAX_REF = config['TAX_REF']
 
 rule all:
-    input: "sample.otu_table.txt"
+    input: "sample.otu_table.txt", "tax_summary_proportion/"
 
 
 #rule project_setup:
