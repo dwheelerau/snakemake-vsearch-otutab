@@ -137,4 +137,5 @@ rule clean:
         rm -f *.txt
         rm -f *.stats
         rm -f *.biom
+        rm -rf tax*
         """
