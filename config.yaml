@@ -1,16 +1,23 @@
-# resources
-#
-# read pair pattern
-pat_r1: "{sample}_R1_001.fastq.gz"
-pat_r2: "{sample}_R2_001.fastq.gz"
-# cln_r1: "{sample}_R1_001.cln.fastq.gz"
-# cln_r2: "{sample}_R2_001.cln.fastq.gz"
+## general params
+REF_DB: /home/dwheeler/databases/gg_13_8_otus/rep_set/97_otus.fasta
+THREADS: 24
+ 
+## MERGE PARAMs
+# minimum overlap between pairs
+MINOVLEN: 60
+# max differences in overlap
+MAXDIFF: 3
 
-# # trimming params
-# minlen: 50
-# qtrim: 'rl'
-# trimq: 10
-# ktrim: 'r'
-# kwin: 21 
-# mink: 11
-# hdist: 1
+## FILTER PARAMs
+# max errors
+MAXEE: 0.5
+# min length of resulting merged fragment
+MINLEN: 400
+# max length of resulting merged fragment
+MAXLEN: 500
+# max number of Ns
+MAXNS: 0
+
+## CLUSTER PARAMs
+CLUSTERMODE: --cluster_size
+CLUSTERID: 0.97

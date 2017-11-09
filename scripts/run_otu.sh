@@ -7,31 +7,73 @@
 
 # heavily inspired by https://github.com/torognes/vsearch/wiki/VSEARCH-pipeline
 
-# RUN PARAMs
-THREADS=24
+# command line params
+
 PERL=$(which perl)
 VSEARCH=$(which vsearch)
 
 RAW_READS="./projectData"
 TMP="./tmp"
-REF_DB="/home/dwheeler/databases/gg_13_8_otus/rep_set/97_otus.fasta"
 LOGDIR="./logs"
 mkdir -p $TMP
 mkdir -p $LOGDIR
 
+# command line paramaters from Snakemake config file
+usage(){
+  echo "Usage:"
+  echo "bash $0 \ "
+  echo "params "
+}
+
+while getopts ":t:m:d:e:i:l:n:c:r:b:h" OPT; do
+	case $OPT in
+		t) THREADS=$OPTARG
+		;;
+		m) MINOVLEN=$OPTARG
+		;;
+		d) MAXDIFF=$OPTARG
+		;;
+		e) MAXEE=$OPTARG
+		;;
+		i) MINLEN=$OPTARG
+		;;
+		l) MAXLEN=$OPTARG
+    ;;
+    n) MAXNS=$OPTARG
+    ;;
+    c) CLUSTERMODE=$OPTARG
+    ;;
+    r) CLUSTERID=$OPTARG
+    ;;
+    b) REF_DB=$OPTARG
+    ;;
+    h) usage
+      exit 0
+    ;;
+		\?) #unrecognized option - show usage
+    usage
+		exit 2
+		;;
+	esac
+done
+
+echo using $REF_DB as reference db
+
+#REF_DB="/home/dwheeler/databases/gg_13_8_otus/rep_set/97_otus.fasta"
+#THREADS=24
 # MERGE PARAMs
-MINOVLEN="--fastq_minovlen 60" #200
-MAXDIFF="--fastq_maxdiffs 3" #15
+#MINOVLEN="--fastq_minovlen 60" #200
+#MAXDIFF="--fastq_maxdiffs 3" #15
 
 # FILTER PARAMs
-MAXEE="--fastq_maxee 0.5"
-MINLEN="--fastq_minlen 400"
-MAXLEN="--fastq_maxlen 500"
-MAXNS="--fastq_maxns 0"
+#MAXEE="--fastq_maxee 0.5"
+#MINLEN="--fastq_minlen 400"
+#MAXLEN="--fastq_maxlen 500"
+#MAXNS="--fastq_maxns 0"
 
 # CLUSTER PARAMs
-CLUSTERMODE="--cluster_size"
-CLUSTERID="--id 0.97"
+#CLUSTERMODE="--cluster_size"
+#CLUSTERID="--id 0.97"
 
 # cleanup otherwise these will be incorprated due to >>
 
@@ -103,8 +145,8 @@ for f in $TMP/*_R1_*.fastq; do
   $VSEARCH --threads $THREADS \
       --fastq_mergepairs $f \
       --reverse $r \
-      $MINOVLEN \
-      $MAXDIFF \
+      --fastq_minovlen $MINOVLEN \
+      --fastq_maxdiffs $MAXDIFF \
       --fastqout $s.merged.fastq \
       --fastq_eeout
 
@@ -119,13 +161,14 @@ for f in $TMP/*_R1_*.fastq; do
       --output $s.stats
   echo
   echo Quality filtering
+  echo "$VSEARCH --threads $THREADS --fastq_filter $s.merged.fastq --fastq_maxee $MAXEE --fastq_minlen $MINLEN --fastq_maxlen $MAXLEN --fastq_maxns $MAXNS --fastaout $s.filtered.fasta  --relabel $s. --log $s.filter.log --fasta_width 0"
 
   $VSEARCH --threads $THREADS \
       --fastq_filter $s.merged.fastq \
-      $MAXEE \
-      $MINLEN \
-      $MAXLEN \
-      $MAXNS \
+      --fastq_maxee $MAXEE \
+      --fastq_minlen $MINLEN \
+      --fastq_maxlen $MAXLEN \
+      --fastq_maxns $MAXNS \
       --fastaout $s.filtered.fasta \
       --relabel $s. \
       --log $s.filter.log \
@@ -134,6 +177,7 @@ for f in $TMP/*_R1_*.fastq; do
   echo
   # this part is to get ready to create OTUS
   echo Dereplicate at sample level and relabel with sample_n
+  echo "$VSEARCH --threads $THREADS --derep_fulllength $s.filtered.fasta --strand plus --output $s.derep.fasta --sizeout --uc $s.derep.uc --relabel $s. --fasta_width 0"
 
   $VSEARCH --threads $THREADS \
       --derep_fulllength $s.filtered.fasta \
@@ -178,6 +222,7 @@ shopt -u extglob
 
 echo
 echo Dereplicate across samples and remove singletons
+echo "$VSEARCH --threads $THREADS --derep_fulllength all.fasta --minuniquesize 2 --sizein --sizeout --fasta_width 0 --uc all.derep.uc --output all.derep.fasta"
 
 $VSEARCH --threads $THREADS \
   --derep_fulllength all.fasta \
@@ -192,6 +237,7 @@ echo Unique non-singleton sequences: $(grep -c "^>" all.derep.fasta)
 
 echo
 echo Precluster at 98% before chimera detection
+echo "$VSEARCH --threads $THREADS --cluster_size all.derep.fasta --id 0.98 --strand plus --sizein --sizeout --fasta_width 0 --uc all.preclustered.uc --centroids all.preclustered.fasta"
 
 $VSEARCH --threads $THREADS \
   --cluster_size all.derep.fasta \
@@ -207,18 +253,20 @@ echo Unique sequences after preclustering: $(grep -c "^>" all.preclustered.fasta
 
 echo
 echo De novo chimera detection
+echo "$VSEARCH --threads $THREADS --uchime_denovo all.preclustered.fasta --sizein --sizeout --fasta_width 0 --nonchimeras all.denovo.nonchimeras.fasta" 
 
 $VSEARCH --threads $THREADS \
   --uchime_denovo all.preclustered.fasta \
   --sizein \
   --sizeout \
   --fasta_width 0 \
-  --nonchimeras all.denovo.nonchimeras.fasta \
+  --nonchimeras all.denovo.nonchimeras.fasta
 
 echo Unique sequences after de novo chimera detection: $(grep -c "^>" all.denovo.nonchimeras.fasta)
 
 echo
 echo Reference chimera detection
+echo "$VSEARCH --threads $THREADS --uchime_ref all.denovo.nonchimeras.fasta --db $REF_DB --sizein --sizeout --fasta_width 0 --nonchimeras all.ref.nonchimeras.fasta"
 
 $VSEARCH --threads $THREADS \
   --uchime_ref all.denovo.nonchimeras.fasta \
@@ -233,14 +281,14 @@ echo Unique sequences after reference-based chimera detection: $(grep -c "^>" al
 echo
 echo Extract all non-chimeric, non-singleton sequences, dereplicated
 
-$PERL ./map.pl all.derep.fasta all.preclustered.uc all.ref.nonchimeras.fasta > all.nonchimeras.derep.fasta
+$PERL ./scripts/map.pl all.derep.fasta all.preclustered.uc all.ref.nonchimeras.fasta > all.nonchimeras.derep.fasta
 
 echo Unique non-chimeric, non-singleton sequences: $(grep -c "^>" all.nonchimeras.derep.fasta)
 
 echo
 echo Extract all non-chimeric, non-singleton sequences in each sample
 
-$PERL ./map.pl all.fasta all.derep.uc all.nonchimeras.derep.fasta > all.nonchimeras.fasta
+$PERL ./scripts/map.pl all.fasta all.derep.uc all.nonchimeras.derep.fasta > all.nonchimeras.fasta
 
 echo Sum of unique non-chimeric, non-singleton sequences in each sample: $(grep -c "^>" all.nonchimeras.fasta)
 
@@ -250,9 +298,11 @@ echo Cluster at 97% and relabel with OTU_n, generate OTU table
 # removed --sizeout becuase I think this crashes fastree, I checked and it does
 #removed --otutabout all.otutab.txt
 # not effect the OTU table, just removes size=x form the fasta OUT file.
+echo "$VSEARCH --threads $THREADS $CLUSTERMODE all.nonchimeras.fasta --id $CLUSTERID --strand plus --sizein --fasta_width 0 --uc all.clustered.uc --relabel OTU_ --centroids all.otus.fasta --otutabout all.otutab.txt"
+
 $VSEARCH --threads $THREADS \
   $CLUSTERMODE all.nonchimeras.fasta \
-  $CLUSTERID \
+  --id $CLUSTERID \
   --strand plus \
   --sizein \
   --fasta_width 0 \
@@ -268,9 +318,11 @@ echo
 echo Mapping sample_seqs_filtered.fasta to all.otus.fasta
 
 # note the use of ALL reads for this step
-vsearch -usearch_global ./sample_seqs_filtered.fasta -db ./all.otus.fasta \
-  $CLUSTERID -strand plus -uc readmap.uc --notrunclabels \
-  --otutabout sample.otu_table.txt --log map_reads_to_clusters.log \
+echo "vsearch -usearch_global ./sample_seqs_filtered.fasta -db ./all.otus.fasta --id $CLUSTERID -strand plus -uc readmap.uc --notrunclabels --otutabout sample.otu_table.txt --log map_reads_to_clusters.log" 
+
+$VSEARCH -usearch_global ./sample_seqs_filtered.fasta -db ./all.otus.fasta \
+  --id $CLUSTERID -strand plus -uc readmap.uc --notrunclabels \
+  --otutabout sample.otu_table.txt --log map_reads_to_clusters.log
 
 echo
 echo Done
