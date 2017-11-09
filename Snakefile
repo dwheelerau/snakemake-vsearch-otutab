@@ -19,6 +19,7 @@ CLUSTERMODE = config['CLUSTERMODE']
 CLUSTERID = config['CLUSTERID']
 REF_DB = config['REF_DB']
 TAX_REF = config['TAX_REF']
+SAM_DEPTH = config['SAM_DEPTH']
 
 rule all:
     input:
@@ -108,6 +109,16 @@ rule summarize_table:
         echo 'you need the above data to set the SAM_DEPTH (--sampling_depth)'
         echo 'param in config for the core_diversity_analysis rule'
         """
+
+rule core_div_analysis:
+    input:
+        summary="sample.otu_table_summary.txt",
+        biom="sample.otu_table_wTax.biom",
+        meta=""
+    output:
+        "cdout/"
+    shell:
+        "core_diversity_analyses.py -i {input.biom} -o {output} -m $PWD/map.txt -c SampleType,day -t $PWD/rep_set.tre -e 20"
 
 onerror:
         print("Biom error? Have you run qiime1 from the commmand line to activate it?")
