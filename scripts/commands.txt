@@ -1,0 +1,33 @@
+# fitler table of mock and other samples that are not required, do this from full table
+filter_samples_from_otu_table.py -i otu_table_newIDs_w_tax.biom -o otu_table_newIDs_w_tax.filtered.biom -m NZGL02039_meta_fixed2.tsv -s 'Stream:*,!WH,!MOCK,!KL0288,!KL0287,!KL0286,!KL0285,!KL0284'
+
+# check summarise as might have removed a bunch of low count samples
+biom summarize-table -i otu_table_newIDs_w_tax.biom -o otu_table_newIDs_w_tax.summarise.txt
+
+# sorted biom table for stream cat, but I added a column to sort by based on client request
+# called SortCol that was numbered 1-n in the order that we needed. This did not work (alph sort)
+# so I just supplied the order in the file sort_order.txt by copying sample column from the 
+# meta spreadsheet
+sort_otu_table.py -i otu_table_newIDs_w_tax.filtered.biom -o otu_table_newIDs_w_tax.filtered.sorted.biom -l ./sort_order.txt
+
+# can check sort order
+biom convert -i otu_table_newIDs_w_tax.filtered.sorted.biom -o test.sort.tsv --to-tsv
+
+# dropping 5k will drop some samples but still think it is best not to go below this
+single_rarefaction.py -i otu_table_newIDs_w_tax.filtered.sorted.biom -o otu_table_newIDs_w_tax_r5000.filtered.sorted.biom -d 5000
+# do the same for 10k
+single_rarefaction.py -i otu_table_newIDs_w_tax.filtered.sorted.biom -o otu_table_newIDs_w_tax_r10000.filtered.sorted.biom -d 10000
+
+# now draw plots for all streams with timesince start of experiment at the bottom, DO NOT USE -s
+# see commands in allStreams folder. Needed to filter at groupby stage because sorting got messed up again!
+
+# split in multiple tables based on stream id
+# orig table already has low one removed so these are rerefied to 4000.
+split_otu_table.py -i otu_table_newIDs_w_tax_r4000.timesorted.biom -m NZGL02039_meta_fixed.tsv -f Stream -o split_otu_tables_stream/
+
+summarize_taxa_through_plots.py -i ./split_otu_tables_stream/otu_table_newIDs_w_tax_r4000.timesorted__Stream_CS__.biom -o test1 -m NZGL02039_meta_fixed.tsv -c Stream,MonSinceStart -s
+# this does the same thing but does not include the CS label in the x-axis
+# warning the -s will sort, by apl, so leave this off if you want to use sort from line 2 above
+summarize_taxa_through_plots.py -i ./split_otu_tables_stream/otu_table_newIDs_w_tax_r4000.timesorted__Stream_CS__.biom -o test1 -m NZGL02039_meta_fixed.tsv -c Stream -s
+
+

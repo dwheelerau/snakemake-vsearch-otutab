@@ -20,18 +20,21 @@ CLUSTERID = config['CLUSTERID']
 REF_DB = config['REF_DB']
 TAX_REF = config['TAX_REF']
 SAM_DEPTH = config['SAM_DEPTH']
+MAP_FILE = config['MAP_FILE']
 
 rule all:
     input:
         "sample.otu_table.txt",
         "tax_summary_proportion/",
-        "sample.otu_table_summary.txt"
+        "sample.otu_table_summary.txt",
+        "all.otus.tre",
+        "coreout/"
 
 rule cluster_otus:
     input:
         "scripts/run_otu.sh"
     output:
-        "sample.otu_table.txt"
+        "sample.otu_table.txt", "all.otus.fasta"
     log:
         stdout=expand("run_otu.{date_string}.stdout",date_string=date_string),
         stderr=expand("run_otu.{date_string}.stderr",date_string=date_string)
@@ -63,7 +66,7 @@ rule conv_biom:
 
 rule assign_taxonomy:
     input:
-        "all.otus.fasta" 
+        "all.otus.fasta"
     output:
         "taxonomy/all.otus_tax_assignments.txt"
     params:
@@ -109,16 +112,48 @@ rule summarize_table:
         echo 'you need the above data to set the SAM_DEPTH (--sampling_depth)'
         echo 'param in config for the core_diversity_analysis rule'
         """
+# Align sequences command
+rule align_otus:
+    input:
+        "all.otus.fasta"
+    output:
+        "pynast_aligned_seqs/all.otus_aligned.fasta"
+    shell:
+        "align_seqs.py -i {input} -o pynast_aligned_seqs/"
+
+rule filter_aln:
+    input:
+        "pynast_aligned_seqs/all.otus_aligned.fasta"
+    output:
+        "pynast_aligned_seqs/all.otus_aligned_pfiltered.fasta"
+    shell:
+        "filter_alignment.py -o pynast_aligned_seqs/ -i {input}"
+
+rule make_phylogeny:
+    input:
+        "pynast_aligned_seqs/all.otus_aligned_pfiltered.fasta"
+    output:
+        "all.otus.tre"
+    shell:
+        "make_phylogeny.py -i {input} -o {output}"
 
 rule core_div_analysis:
     input:
         summary="sample.otu_table_summary.txt",
         biom="sample.otu_table_wTax.biom",
-        meta=""
+        meta=MAP_FILE,
+        tree="all.otus.tre"
     output:
-        "cdout/"
+        "coreout/"
+    params:
+        sample_depth=SAM_DEPTH
     shell:
-        "core_diversity_analyses.py -i {input.biom} -o {output} -m $PWD/map.txt -c SampleType,day -t $PWD/rep_set.tre -e 20"
+        """
+        core_diversity_analyses.py -i {input.biom} -o tmpcore/ -m {input.meta} \
+        -t {input.tree} -e {params.sample_depth}
+        mv tmpcore/* {output}
+        rmdir tmpcore/
+        """
 
 onerror:
         print("Biom error? Have you run qiime1 from the commmand line to activate it?")

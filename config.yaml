@@ -24,4 +24,5 @@ CLUSTERMODE: --cluster_size
 CLUSTERID: 0.97
 
 ## Core diversity analysis settings, using a default of 5000
-SAM_DEPTH: 5000
+SAM_DEPTH: 100
+MAP_FILE: meta.tsv
