@@ -1,7 +1,8 @@
 ## general params
 REF_DB: /home/dwheeler/databases/gg_13_8_otus/rep_set/97_otus.fasta
+TAX_REF: /home/dwheeler/databases/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt
 THREADS: 24
- 
+
 ## MERGE PARAMs
 # minimum overlap between pairs
 MINOVLEN: 60
