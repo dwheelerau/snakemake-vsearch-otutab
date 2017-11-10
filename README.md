@@ -2,7 +2,7 @@
 
 
 ### Requirments  
-Paired end reads located in a directory called projectData located in the same
+Paired end reads located in a directory called `projectData` located in the same
 path as the Snakefile from this repo. The filenames need to be in the following
 form:
 
@@ -22,20 +22,25 @@ the rest of the file name.
 `snakemake all` will run the full pipeline.  
 `snakemake clean` will remove all outputs.
 
+Specify the number of cps you want to expose to the pipeline using `--cores`.  
+`snakemake all --cores 24`  
+
 
 ### The rules available  
-rule all - run all rules.  
-rule cluster_otus - cluster otus using vsearch.  
-rule conv_biom - convert OTU table to biom table.  
-rule assign_taxonomy - assign taxonomy using green genes.  
-rule add_taxonomy - add taxonomy to biom table.  
-rule summarize_taxa - summarise taxa information.  
-rule summarize_table 
-rule align_otus - align OTU sequences for phylogeny.  
-rule filter_aln  
-rule make_phylogeny - make phylogeny from alignment.  
-rule core_div_analysis - run core_diversity_analysis.py script.  
-rule clean - remove all files for fresh run.  
+Individual rule can be run with `snakemake *rule_name*`  
+
+`rule all` - run all rules.  
+`rule cluster_otus` - cluster otus using vsearch.  
+`rule conv_biom` - convert OTU table to biom table.  
+`rule assign_taxonomy` - assign taxonomy using green genes.  
+`rule add_taxonomy` - add taxonomy to biom table.  
+`rule summarize_taxa` - summarise taxa information.  
+`rule summarize_table` 
+`rule align_otus` - align OTU sequences for phylogeny.  
+`rule filter_aln`  
+`rule make_phylogeny` - make phylogeny from alignment.  
+`rule core_div_analysis` - run core_diversity_analysis.py script.  
+`rule clean` - remove all files for fresh run.  
 
 
 ### Config.yaml file  
