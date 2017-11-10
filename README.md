@@ -1,4 +1,75 @@
-Readme for ...
+## Snakemake pipeline for vsearch based qiime analysis  
 
-The tree is used for beta diversity measures that use phylogeny, it does not
-change the other plots in any way.
+
+### Requirments  
+Paired end reads located in a directory called projectData located in the same
+path as the Snakefile from this repo. The filenames need to be in the following
+form:
+
+`SAMPLENAME_L001_R1_001.fastq.gz`
+
+The SAMPLENAME can not contain ANY special characters as the script uses
+periods (.) and underscores to parse out the sample name information away from
+the rest of the file name.  
+-  snakemake  
+-  vsearch  
+-  QIIME1 (I have this installed via conda)  
+
+
+*Importantly* you need to adjust the config file to meet your requirements.  
+
+### Running the snakemake pipeline
+`snakemake all` will run the full pipeline.  
+`snakemake clean` will remove all outputs.
+
+
+### The rules available  
+rule all - run all rules.  
+rule cluster_otus - cluster otus using vsearch.  
+rule conv_biom - convert OTU table to biom table.  
+rule assign_taxonomy - assign taxonomy using green genes.  
+rule add_taxonomy - add taxonomy to biom table.  
+rule summarize_taxa - summarise taxa information.  
+rule summarize_table 
+rule align_otus - align OTU sequences for phylogeny.  
+rule filter_aln  
+rule make_phylogeny - make phylogeny from alignment.  
+rule core_div_analysis - run core_diversity_analysis.py script.  
+rule clean - remove all files for fresh run.  
+
+
+### Config.yaml file  
+The config file is shown below, note important options for overlap and also key
+params for the `core_diversity_analysis.py` script in qiime. The snakemake
+pipeline will output the sample counts for determining the `SAM_DEPTH` value.
+
+```
+## general params
+REF_DB: /home/dwheeler/databases/gg_13_8_otus/rep_set/97_otus.fasta
+TAX_REF: /home/dwheeler/databases/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt
+THREADS: 24
+
+## MERGE PARAMs
+# minimum overlap between pairs
+MINOVLEN: 60
+# max differences in overlap
+MAXDIFF: 3
+
+## FILTER PARAMs
+# max errors
+MAXEE: 0.5
+# min length of resulting merged fragment
+MINLEN: 400
+# max length of resulting merged fragment
+MAXLEN: 500
+# max number of Ns
+MAXNS: 0
+
+## CLUSTER PARAMs
+CLUSTERMODE: --cluster_size
+CLUSTERID: 0.97
+
+## Core diversity analysis settings, using a default of 5000
+SAM_DEPTH: 100
+MAP_FILE: meta.tsv
+```
