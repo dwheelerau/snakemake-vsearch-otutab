@@ -39,16 +39,16 @@ rule cluster_otus:
         stdout=expand("run_otu.{date_string}.stdout",date_string=date_string),
         stderr=expand("run_otu.{date_string}.stderr",date_string=date_string)
     params:
-        threads=expand("{THREADS}", THREADS=THREADS),
-        minovlen=expand("{MINOVLEN}", MINOVLEN=MINOVLEN),
-        maxdiff=expand("{MAXDIFF}", MAXDIFF=MAXDIFF),
-        maxee=expand("{MAXEE}", MAXEE=MAXEE),
-        minlen=expand("{MINLEN}", MINLEN=MINLEN),
-        maxlen=expand("{MAXLEN}", MAXLEN=MAXLEN),
-        maxns=expand("{MAXNS}", MAXNS=MAXNS),
-        clustermode=expand("{CLUSTERMODE}", CLUSTERMODE=CLUSTERMODE),
-        clusterid=expand("{CLUSTERID}", CLUSTERID=CLUSTERID),
-        ref_db=expand("{REF_DB}", REF_DB=REF_DB)
+        threads=THREADS,
+        minovlen=MINOVLEN,
+        maxdiff=MAXDIFF,
+        maxee=MAXEE,
+        minlen=MINLEN,
+        maxlen=MAXLEN,
+        maxns=MAXNS,
+        clustermode=CLUSTERMODE,
+        clusterid=CLUSTERID,
+        ref_db=REF_DB
     shell:
         "scripts/run_otu.sh "
         "-t {params.threads} -m {params.minovlen} -d {params.maxdiff} "
@@ -70,8 +70,8 @@ rule assign_taxonomy:
     output:
         "taxonomy/all.otus_tax_assignments.txt"
     params:
-        taxonomy=expand("{TAX_REF}", TAX_REF=TAX_REF),
-        taxref=expand("{REF_DB}", REF_DB=REF_DB)
+        taxonomy=TAX_REF,
+        taxref=REF_DB
     shell:
         "assign_taxonomy.py -m uclust -i {input} -o taxonomy "
         "-t {params.taxonomy} -r {params.taxref}"
@@ -173,4 +173,6 @@ rule clean:
         rm -f *.stats
         rm -f *.biom
         rm -rf tax*
+        rm -rf pynast_aligned_seq/
+        rm -rf coreout/
         """
