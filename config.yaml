@@ -13,9 +13,9 @@ MAXDIFF: 3
 # max errors
 MAXEE: 0.5
 # min length of resulting merged fragment
-MINLEN: 400
+MINLEN: 280
 # max length of resulting merged fragment
-MAXLEN: 500
+MAXLEN: 310
 # max number of Ns
 MAXNS: 0
 

@@ -43,6 +43,11 @@ Individual rule can be run with `snakemake *rule_name*`
 `rule clean` - remove all files for fresh run.  
 
 
+### testing  
+Information on Mock communities can be downloaded from here:
+`https://raw.githubusercontent.com/caporaso-lab/mockrobiota/master/inventory.tsv`  
+
+
 ### Config.yaml file  
 The config file is shown below, note important options for overlap and also key
 params for the `core_diversity_analysis.py` script in qiime. The snakemake

@@ -187,7 +187,8 @@ rule clean:
         rm -f *.stats
         rm -f *.biom
         rm -rf tax*
-        rm -rf pynast_aligned_seq/
+        rm -rf pynast_aligned_seqs/
         rm -rf coreout/
         rm -rf fastqc/
+        rm -rf tmpcore/
         """
