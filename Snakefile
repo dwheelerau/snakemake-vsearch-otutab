@@ -25,6 +25,7 @@ MAP_FILE = config['MAP_FILE']
 rule all:
     input:
         "sample.otu_table.txt",
+        "fastqc/",
         "tax_summary_proportion/",
         "sample.otu_table_summary.txt",
         "all.otus.tre",
@@ -55,6 +56,19 @@ rule cluster_otus:
         "-e {params.maxee} -i {params.minlen} -l {params.maxlen} "
         "-n {params.maxns} -c '{params.clustermode}' -r {params.clusterid} "
         "-b '{params.ref_db}' > >(tee -a {log.stdout}) 2> >(tee -a {log.stderr} >&2)"
+
+rule qc_reads:
+    input:
+        "sample.otu_table.txt"
+    output:
+        "fastqc/"
+    shell:
+        """
+        mkdir -p fastqc
+        for fq in tmp/*merged.fastq; do
+            fastqc -o fastqc/ $fq
+        done
+        """
 
 rule conv_biom:
     input:
@@ -175,4 +189,5 @@ rule clean:
         rm -rf tax*
         rm -rf pynast_aligned_seq/
         rm -rf coreout/
+        rm -rf fastqc/
         """
