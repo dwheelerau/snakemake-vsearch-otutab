@@ -5,14 +5,18 @@ THREADS: 24
 
 ## MERGE PARAMs
 # minimum overlap between pairs
+# 300 BP V3-V4 should have an overlap of 120-140 bp (but this is best case)
+# for CO1 it is 100 bp for 300 PE
 MINOVLEN: 60
 # max differences in overlap
 MAXDIFF: 3
 
 ## FILTER PARAMs
-# max errors
+# max errors, 1 is exp 1 error
 MAXEE: 0.5
 # min length of resulting merged fragment
+# for V3-V4 this is 450-470
+# for CO1 it is 350-390
 MINLEN: 280
 # max length of resulting merged fragment
 MAXLEN: 310
