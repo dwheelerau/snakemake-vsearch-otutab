@@ -196,6 +196,7 @@ rule clean:
         rm -f *.txt
         rm -f *.stats
         rm -f *.biom
+        rm -f *.log
         rm -rf tax*
         rm -rf pynast_aligned_seqs/
         rm -rf coreout/
