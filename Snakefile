@@ -25,9 +25,10 @@ MAP_FILE = config['MAP_FILE']
 rule all:
     input:
         "sample.otu_table.txt",
+        "sample.rename.otu_table.txt",
         "fastqc/",
         "tax_summary_proportion/",
-        "sample.otu_table_summary.txt",
+        "sample.rename.otu_table_summary.txt",
         "all.otus.tre",
         "coreout/"
 
@@ -70,11 +71,20 @@ rule qc_reads:
         done
         """
 
+rule fix_names:
+    input:
+        biom="sample.otu_table.txt",
+        key="sample_key.tsv"
+    output:
+        "sample.rename.otu_table.txt"
+    shell:
+        "python2 scripts/fix_names.py {input.key}"
+
 rule conv_biom:
     input:
         "sample.otu_table.txt"
     output:
-        "sample.otu_table.biom"
+        "sample.rename.otu_table.biom"
     shell:
         "biom convert -i {input} -o {output} --table-type 'OTU table' --to-hdf5"
 
@@ -93,16 +103,16 @@ rule assign_taxonomy:
 rule add_taxonomy:
     input:
         taxa="taxonomy/all.otus_tax_assignments.txt",
-        biom="sample.otu_table.biom"
+        biom="sample.rename.otu_table.biom"
     output:
-        "sample.otu_table_wTax.biom"
+        "sample.rename.otu_table_wTax.biom"
     shell:
         "biom add-metadata -i {input.biom} --observation-metadata-fp {input.taxa} "
         "--sc-separated taxonomy --observation-header OTUID,taxonomy -o {output}"
 
 rule summarize_taxa:
     input:
-        "sample.otu_table_wTax.biom"
+        "sample.rename.otu_table_wTax.biom"
     output:
         prop="tax_summary_proportion/",
         count="tax_summary_count/"
@@ -114,9 +124,9 @@ rule summarize_taxa:
 
 rule summarize_table:
     input:
-        "sample.otu_table_wTax.biom"
+        "sample.rename.otu_table_wTax.biom"
     output:
-        "sample.otu_table_summary.txt"
+        "sample.rename.otu_table_summary.txt"
     shell:
         """
         biom summarize-table -i {input} -o {output}
@@ -153,8 +163,8 @@ rule make_phylogeny:
 
 rule core_div_analysis:
     input:
-        summary="sample.otu_table_summary.txt",
-        biom="sample.otu_table_wTax.biom",
+        summary="sample.rename.otu_table_summary.txt",
+        biom="sample.rename.otu_table_wTax.biom",
         meta=MAP_FILE,
         tree="all.otus.tre"
     output:
