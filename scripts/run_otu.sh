@@ -25,7 +25,7 @@ usage(){
   echo "params "
 }
 
-while getopts ":t:m:d:e:i:l:n:c:r:b:h" OPT; do
+while getopts ":t:m:d:e:i:l:q:n:c:r:b:h" OPT; do
 	case $OPT in
 		t) THREADS=$OPTARG
 		;;
@@ -38,6 +38,8 @@ while getopts ":t:m:d:e:i:l:n:c:r:b:h" OPT; do
 		i) MINLEN=$OPTARG
 		;;
 		l) MAXLEN=$OPTARG
+		;;
+		q) MINQ=$OPTARG
     ;;
     n) MAXNS=$OPTARG
     ;;
@@ -69,6 +71,7 @@ echo using $REF_DB as reference db
 #MAXEE="--fastq_maxee 0.5"
 #MINLEN="--fastq_minlen 400"
 #MAXLEN="--fastq_maxlen 500"
+#MINQ="--fastq_truncqual 3"
 #MAXNS="--fastq_maxns 0"
 
 # CLUSTER PARAMs
@@ -147,6 +150,7 @@ for f in $TMP/*_R1_*.fastq; do
       --reverse $r \
       --fastq_minovlen $MINOVLEN \
       --fastq_maxdiffs $MAXDIFF \
+      --fastq_truncqual $MINQ \
       --fastqout $s.merged.fastq \
       --fastq_eeout
 
