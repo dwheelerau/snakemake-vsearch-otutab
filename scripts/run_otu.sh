@@ -163,6 +163,11 @@ for f in $TMP/*_R1_*.fastq; do
   $VSEARCH --threads $THREADS \
       --fastq_eestats $s.merged.fastq \
       --output $s.stats
+
+  $VSEARCH --threads $THREADS \
+      --fastq_eestats2 $s.merged.fastq \
+      --output $s.stats2
+
   echo
   echo Quality filtering
   echo "$VSEARCH --threads $THREADS --fastq_filter $s.merged.fastq --fastq_maxee $MAXEE --fastq_minlen $MINLEN --fastq_maxlen $MAXLEN --fastq_maxns $MAXNS --fastaout $s.filtered.fasta  --relabel $s. --log $s.filter.log --fasta_width 0"
@@ -174,6 +179,7 @@ for f in $TMP/*_R1_*.fastq; do
       --fastq_maxlen $MAXLEN \
       --fastq_maxns $MAXNS \
       --fastaout $s.filtered.fasta \
+      --fastqout_discarded $s.discarded.fastq \
       --relabel $s. \
       --log $s.filter.log \
       --fasta_width 0
@@ -216,7 +222,9 @@ mv ./*.merged.fastq $TMP
 
 # move files that are not needed
 mv *.stats ./readStats
+mv *.stats2 ./readStats
 mv *.log $LOGDIR
+mv *discarded.fastq $TMP
 
 # excludes all* sample_seqs_filtered that is need for mapping
 shopt -s extglob
