@@ -22,6 +22,7 @@ REF_DB = config['REF_DB']
 TAX_REF = config['TAX_REF']
 SAM_DEPTH = config['SAM_DEPTH']
 MAP_FILE = config['MAP_FILE']
+TAX_METH = config['TAX_METH']
 
 rule all:
     input:
@@ -97,9 +98,10 @@ rule assign_taxonomy:
         "taxonomy/all.otus_tax_assignments.txt"
     params:
         taxonomy=TAX_REF,
-        taxref=REF_DB
+        taxref=REF_DB,
+        taxmeth=TAX_METH
     shell:
-        "assign_taxonomy.py -m uclust -i {input} -o taxonomy "
+        "assign_taxonomy.py -m {params.taxmeth} -i {input} -o taxonomy "
         "-t {params.taxonomy} -r {params.taxref}"
 
 rule add_taxonomy:

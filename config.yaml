@@ -29,6 +29,9 @@ MAXNS: 0
 CLUSTERMODE: --cluster_size
 CLUSTERID: 0.97
 
+## asign taxonomy params, defaul uclust, alt blast, rdp
+TAX_METH: uclust
+
 ## Core diversity analysis settings, using a default of 5000
 SAM_DEPTH: 100
 MAP_FILE: meta.tsv
