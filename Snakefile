@@ -84,7 +84,7 @@ rule fix_names:
 
 rule conv_biom:
     input:
-        "sample.otu_table.txt"
+        "sample.rename.otu_table.txt"
     output:
         "sample.rename.otu_table.biom"
     shell:
