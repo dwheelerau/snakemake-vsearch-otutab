@@ -15,6 +15,25 @@ the rest of the file name.
 -  vsearch  
 -  QIIME1 (I have this installed via conda)  
 
+The final steps of the analysis tries to fix the sample names by adding a
+period (.) in place of any original mutations that were required to avoid
+special characters (periods are allowed via qiime). To do this a python script
+called `fix_names.py` in the scripts directory is executed. This file requires
+a `sample_key.tsv` file in the following format.  
+
+```
+F101110 F-10-11-10
+F101110 F-10-111-10
+```
+
+Creation of the biom table also requires a meta file in qiime format, this
+should use the period names that will be outputed by the fix_names.py script.
+The meta file name must be specified in the config.yaml file. Here is an example of what this workflow will do to an example sample names.  
+  
+Sample-1 -> sample1 -> sample.1 and the meta file should look like this:  
+#SampleID    BarcodeSequence     LinkerPrimerSequence    Description  
+Sample.1 aaaaaaaaaaaaaaaaaa  aaaaaaaaaaaaaaaaaa  Sample-1  
+  
 
 *Importantly* you need to adjust the config file to meet your requirements.  
 
