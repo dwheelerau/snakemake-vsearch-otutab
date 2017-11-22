@@ -106,3 +106,11 @@ CLUSTERID: 0.97
 SAM_DEPTH: 100
 MAP_FILE: meta.tsv
 ```
+
+### notes
+For blast as the assign_taxonomy method you need a `.ncbirc` file that contains the following (editing the qiime_config file did not work for me). This file path should point to the blast matrix files, ie PAM10 etc. This file should be located in the root of this repo.  
+
+```
+[NCBI]
+data=/usr/share/ncbi/data
+```
